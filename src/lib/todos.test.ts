@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest'
 import type { Todo } from '../types'
 import { filterTodos, normalizeTitle, todosReducer } from './todos'
 
-const todo = (id: string, completed = false): Todo => ({ id, title: `Задача ${id}`, completed, createdAt: 0 })
+const todo = (id: string, completed = false, number = 1): Todo => ({
+  id,
+  number,
+  title: `Задача ${id}`,
+  completed,
+  createdAt: 0,
+})
 
 describe('normalizeTitle', () => {
   it('обрезает и схлопывает пробелы', () => {
@@ -15,6 +21,11 @@ describe('todosReducer', () => {
     const state = todosReducer([todo('a')], { type: 'add', title: ' Новая ', id: 'b', createdAt: 1 })
     expect(state.map((t) => t.id)).toEqual(['b', 'a'])
     expect(state[0].title).toBe('Новая')
+  })
+
+  it('выдаёт следующий номер, даже если ранние задачи удалены', () => {
+    const state = todosReducer([todo('a', false, 7)], { type: 'add', title: 'Новая', id: 'b', createdAt: 1 })
+    expect(state[0].number).toBe(8)
   })
 
   it.each(['', '   ', '\t\n'])('не добавляет пустую задачу %j', (title) => {

@@ -9,6 +9,10 @@ export type TodoAction =
   | { type: 'clearCompleted' }
   | { type: 'replace'; todos: Todo[] }
 
+export function nextNumber(todos: Todo[]): number {
+  return todos.reduce((max, t) => Math.max(max, t.number), 0) + 1
+}
+
 /** Убирает пробелы по краям и схлопывает повторяющиеся внутри. */
 export function normalizeTitle(raw: string): string {
   return raw.trim().replace(/\s+/g, ' ')
@@ -19,7 +23,10 @@ export function todosReducer(state: Todo[], action: TodoAction): Todo[] {
     case 'add': {
       const title = normalizeTitle(action.title)
       if (!title) return state
-      return [{ id: action.id, title, completed: false, createdAt: action.createdAt }, ...state]
+      return [
+        { id: action.id, number: nextNumber(state), title, completed: false, createdAt: action.createdAt },
+        ...state,
+      ]
     }
     case 'toggle':
       return state.map((t) =>

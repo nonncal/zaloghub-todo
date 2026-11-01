@@ -35,7 +35,7 @@ describe('App', () => {
     const { addTodo } = setup()
     await addTodo('    ')
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
-    expect(screen.getByRole('alert')).toHaveTextContent('пустую строку')
+    expect(screen.getByRole('alert')).toHaveTextContent('Введите текст задачи')
   })
 
   it('переключает выполнение', async () => {
@@ -106,7 +106,7 @@ describe('App', () => {
 
   it('подхватывает изменения из другой вкладки', () => {
     render(<App />)
-    const todos = [{ id: 'x', title: 'Из другой вкладки', completed: false, createdAt: 1 }]
+    const todos = [{ id: 'x', number: 1, title: 'Из другой вкладки', completed: false, createdAt: 1 }]
     act(() => {
       window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: JSON.stringify(todos) }))
     })

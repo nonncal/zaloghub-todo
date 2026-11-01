@@ -5,21 +5,16 @@ import { TodoItem } from './components/TodoItem'
 import { UndoToast } from './components/UndoToast'
 import { useHashFilter } from './hooks/useHashFilter'
 import { useTodos } from './hooks/useTodos'
-import { plural } from './lib/plural'
 import { filterTodos } from './lib/todos'
 import type { Filter, Todo } from './types'
 
 const UNDO_TIMEOUT = 6000
 
-const EMPTY_TEXT: Record<Filter, string> = {
-  all: 'Список пуст. Добавьте первую задачу — она сохранится и после перезагрузки страницы.',
-  active: 'Активных задач нет. Всё, что было запланировано, выполнено.',
-  completed: 'Выполненных задач пока нет. Отметьте задачу галочкой, и она появится здесь.',
+const EMPTY_TEXT: Record<Filter, { title: string; text?: string }> = {
+  all: { title: 'Задач пока нет', text: 'Добавленные задачи сохранятся в браузере и останутся после перезагрузки' },
+  active: { title: 'Активных задач нет' },
+  completed: { title: 'Выполненных задач нет' },
 }
-
-const today = new Intl.DateTimeFormat('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }).format(
-  new Date(),
-)
 
 export default function App() {
   const { todos, findIndex, add, toggle, rename, remove, restore, clearCompleted } = useTodos()
@@ -74,45 +69,16 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [handleUndo, removed])
 
-  const progress = counts.all === 0 ? 0 : counts.completed / counts.all
+  const empty = EMPTY_TEXT[filter]
 
   return (
-    <div className="layout">
-      <div className="rail">
-      <header className="masthead">
-        <p className="masthead__date">{today}</p>
-        <h1 className="masthead__title">Задачи</h1>
-        <p className="masthead__summary">
-          {counts.all === 0
-            ? 'Здесь пока пусто'
-            : `Выполнено ${counts.completed} из ${counts.all} ${plural(counts.all, ['задачи', 'задач', 'задач'])}`}
-        </p>
-        <div
-          className="progress"
-          role="progressbar"
-          aria-label="Доля выполненных задач"
-          aria-valuemin={0}
-          aria-valuemax={Math.max(counts.all, 1)}
-          aria-valuenow={counts.completed}
-        >
-          <div className="progress__bar" style={{ transform: `scaleX(${progress})` }} />
-        </div>
+    <div className="page">
+      <header className="head">
+        <h1 className="head__title">Задачи</h1>
+        <FilterTabs value={filter} counts={counts} onChange={setFilter} />
       </header>
 
-      <aside className="sidebar">
-        <FilterTabs value={filter} counts={counts} onChange={setFilter} />
-        {counts.completed > 0 && (
-          <button type="button" className="button button--ghost sidebar__clear" onClick={clearCompleted}>
-            Удалить выполненные ({counts.completed})
-          </button>
-        )}
-        <p className="sidebar__hint">
-          <kbd>/</kbd> новая задача, двойной клик по тексту — изменить
-        </p>
-      </aside>
-      </div>
-
-      <main className="board">
+      <main className="sheet">
         <TodoForm onAdd={add} inputRef={inputRef} />
 
         {visible.length > 0 ? (
@@ -122,13 +88,46 @@ export default function App() {
             ))}
           </ul>
         ) : (
-          <p className="empty">{EMPTY_TEXT[filter]}</p>
+          <div className="empty">
+            <p className="empty__title">{empty.title}</p>
+            {empty.text && <p className="empty__text">{empty.text}</p>}
+          </div>
+        )}
+
+        {counts.all > 0 && (
+          <div className="tally">
+            <p className="tally__text">
+              Выполнено {counts.completed} из {counts.all}
+            </p>
+            <div
+              className="tally__bar"
+              role="progressbar"
+              aria-label="Доля выполненных задач"
+              aria-valuemin={0}
+              aria-valuemax={counts.all}
+              aria-valuenow={counts.completed}
+            >
+              <div className="tally__fill" style={{ transform: `scaleX(${counts.completed / counts.all})` }} />
+            </div>
+            {counts.completed > 0 && (
+              <button type="button" className="text-button" onClick={clearCompleted}>
+                Удалить выполненные
+              </button>
+            )}
+          </div>
         )}
       </main>
 
-      <footer className="footer">
-        Тестовое задание для ZalogHub.{' '}
-        <a href="https://github.com/nonncal/zaloghub-todo">Исходный код на GitHub</a>
+      <footer className="foot">
+        <p className="foot__keys">
+          <span>
+            <kbd>/</kbd> новая задача
+          </span>
+          <span>двойной клик по тексту — изменить</span>
+        </p>
+        <p>
+          Тестовое задание для ZalogHub, <a href="https://github.com/nonncal/zaloghub-todo">код на GitHub</a>
+        </p>
       </footer>
 
       <UndoToast title={removed?.todo.title ?? null} onUndo={handleUndo} />

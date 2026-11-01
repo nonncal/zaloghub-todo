@@ -11,13 +11,11 @@ interface Props {
   onRemove: (id: string) => void
 }
 
-const stampDate = new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+const shortDate = new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit' })
 
 export const TodoItem = memo(function TodoItem({ todo, onToggle, onRename, onRemove }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(todo.title)
-  // Штамп «ставится» с анимацией только по действию пользователя, а не при загрузке страницы
-  const [stampAnimated, setStampAnimated] = useState(false)
   const editRef = useRef<HTMLInputElement>(null)
   const editButtonRef = useRef<HTMLButtonElement>(null)
   // Защита от двойного завершения: Escape размонтирует поле, и браузер следом шлёт blur
@@ -52,15 +50,16 @@ export const TodoItem = memo(function TodoItem({ todo, onToggle, onRename, onRem
 
   return (
     <li className={`todo${todo.completed ? ' todo--done' : ''}`}>
+      <span className="todo__number">
+        <span className="todo__number-sign">№</span>
+        {todo.number}
+      </span>
       <input
         id={checkboxId}
         className="todo__checkbox visually-hidden"
         type="checkbox"
         checked={todo.completed}
-        onChange={() => {
-          setStampAnimated(!todo.completed)
-          onToggle(todo.id)
-        }}
+        onChange={() => onToggle(todo.id)}
       />
       <label className="todo__check" htmlFor={checkboxId}>
         <CheckIcon />
@@ -88,9 +87,8 @@ export const TodoItem = memo(function TodoItem({ todo, onToggle, onRename, onRem
       )}
 
       {todo.completed && todo.completedAt !== undefined && !editing && (
-        <span className={`stamp${stampAnimated ? ' stamp--animated' : ''}`} aria-hidden="true">
-          <span className="stamp__label">Выполнено</span>
-          <span className="stamp__date">{stampDate.format(todo.completedAt)}</span>
+        <span className="todo__meta">
+          выполнено <time dateTime={new Date(todo.completedAt).toISOString()}>{shortDate.format(todo.completedAt)}</time>
         </span>
       )}
 

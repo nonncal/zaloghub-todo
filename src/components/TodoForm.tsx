@@ -37,7 +37,7 @@ export function TodoForm({ onAdd, inputRef }: Props) {
           type="text"
           value={value}
           maxLength={MAX_TITLE_LENGTH}
-          placeholder="Что нужно сделать?"
+          placeholder="Новая задача"
           autoComplete="off"
           enterKeyHint="done"
           aria-invalid={error}
@@ -53,7 +53,7 @@ export function TodoForm({ onAdd, inputRef }: Props) {
       </div>
       {error && (
         <p className="todo-form__error" id={errorId} role="alert">
-          Напишите текст задачи — пустую строку или одни пробелы добавить нельзя.
+          Введите текст задачи
         </p>
       )}
     </form>

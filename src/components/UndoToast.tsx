@@ -9,7 +9,7 @@ export function UndoToast({ title, onUndo }: Props) {
       {title !== null && (
         <div className="toast">
           <span className="toast__text">
-            Задача «<span className="toast__title">{title}</span>» удалена
+            Удалена задача «{title}»
           </span>
           <button type="button" className="toast__undo" onClick={onUndo}>
             Вернуть
